@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Montserrat:wght@200;400;500;700&family=Roboto:wght@300;400;500;700;900&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  top: 0;
+  box-sizing: border-box;
+  font-family: "roboto";
+}
+/* global variables that aren't generated in codepen */
+.element-left,
+.element-right,
+.element-Predleft,
+.element-Predright .element-left3,
+.element-right3,
+.element-left4,
+.element-right4,
+.element-left5,
+.element-right5,
+.element-left10,
+.element-left15,
+.element-left16 {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.element-left {
+  float: left;
+  margin-right: 20px; /* Расстояние между изображениями */
+}
+
+.element-right {
+  float: right;
+  margin-left: 20px; /* Расстояние между изображениями */
+}
+.element-Predleft {
+  float: left;
+  margin-right: 280px; /* Расстояние между изображениями */
+  margin-top: 220px;
+}
+.element-Predright {
+  float: right;
+  margin-left: 100px; /* Расстояние между изображениями */
+  margin-top: 220px;
+}
+.element-left3 {
+  float: left; /* Расстояние между изображениями */
+}
+
+.element-right3 {
+  float: right;
+  /* Расстояние между изображениями */
+}
+.element-left4 {
+  float: left;
+  margin-right: 20px; /* Расстояние между изображениями */
+}
+
+.element-right4 {
+  float: right;
+  margin-left: 20px; /* Расстояние между изображениями */
+}
+.element-left5 {
+  float: left;
+  margin-right: 20px; /* Расстояние между изображениями */
+}
+
+.element-right5 {
+  float: right;
+  margin-left: 20px; /* Расстояние между изображениями */
+}
+.element-left10 {
+  float: left;
+  margin-right: 20px;
+}
+.element-left15 {
+  float: left;
+  margin-right: 20px;
+}
+.element-left16 {
+  float: left;
+  margin-right: 20px;
+}
+.element-with-glow {
+  box-shadow: 200px 100px 200px 100px rgb(10, 10, 62);
+  /* Другие стили элемента */
+}
+.slider-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.slider {
+  display: flex;
+  overflow: hidden;
+}
+
+img {
+  width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.active {
+  transform: scale(1.2); /* Увеличение активного слайда */
+}
+
+.prev-button,
+.next-button {
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.prev-button {
+  left: 10px;
+}
+
+.next-button {
+  right: 10px;
+}

@@ -16,12 +16,14 @@ import LoginWithGoogle from "../pages/message/LoginWithGoogle";
 import Cabinet from "../pages/Cabinet/Cabinet";
 import AccountRecovery from "../pages/Poddershka/AccountRecovercy";
 import DownloadLocalWebsite from "../pages/Info/Download";
+import Favourites from "../pages/shop/Favourites";
 import { Chat } from "../chatgpt/Chat";
 
 const Content = () => {
   return (
     <Routes>
       <Route path="/Admin" element={<Admin />} />
+      <Route path="/Favourites" element={<Favourites />} />
       <Route path="/" element={<Header />} />
       <Route path="/DownloadLocalWebsite" element={<DownloadLocalWebsite />} />
       <Route path="/AccountRecovery" element={<AccountRecovery />} />

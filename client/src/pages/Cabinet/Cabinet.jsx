@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { auth } from "../../firebase"; // Импортируйте объект auth из вашего Firebase-конфига
-import AvatarUpload from "../message/Ava"; // Импортируйте компонент AvatarUpload
-import { onAuthStateChanged, signOut } from "firebase/auth"; // Импортируйте функцию signOut из Firebase Authentication
+import { auth } from "../../firebase"; // Import your Firebase authentication object
+import AvatarUpload from "../message/Ava"; // Import the AvatarUpload component
+import { onAuthStateChanged, signOut } from "firebase/auth"; // Import the signOut function from Firebase Authentication
 import { Link } from "react-router-dom";
 import BurgerMenu from "../../Burger/Burgermenu";
+import Header from "../../Header/Header"; // Импортируйте ваш хедер
 
 function Cabinet() {
   const [displayName, setDisplayName] = useState("");
@@ -13,32 +14,32 @@ function Cabinet() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUser(user); // Устанавливаем текущего пользователя, если он вошел в систему
+        setUser(user); // Set the current user if they are logged in
         const storedDisplayName = localStorage.getItem("displayName");
         if (storedDisplayName) {
           setDisplayName(storedDisplayName);
         } else {
-          setDisplayName(user.displayName || ""); // Устанавливаем имя пользователя из профиля
+          setDisplayName(user.displayName || ""); // Set the user's display name from their profile
         }
-        setAvatarURL(user.photoURL || ""); // Устанавливаем URL аватарки пользователя из профиля
+        setAvatarURL(user.photoURL || ""); // Set the user's avatar URL from their profile
       } else {
-        setUser(null); // Устанавливаем null, если пользователь вышел из системы
-        setDisplayName(""); // Очищаем имя пользователя
-        setAvatarURL(""); // Очищаем URL аватарки
+        setUser(null); // Set to null if the user logs out
+        setDisplayName(""); // Clear the user's name
+        setAvatarURL(""); // Clear the avatar URL
       }
     });
 
     return () => {
-      unsubscribe(); // Отписываемся от обновлений состояния аутентификации при размонтировании компонента
+      unsubscribe(); // Unsubscribe from authentication state updates when the component unmounts
     };
   }, []);
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth); // Выход из системы пользователя
-      setUser(null); // Устанавливаем null, так как пользователь вышел из системы
+      await signOut(auth); // Sign the user out
+      setUser(null); // Set to null as the user has logged out
     } catch (error) {
-      console.error("Ошибка при выходе из аккаунта:", error.message);
+      console.error("Error signing out:", error.message);
     }
   };
 
@@ -47,6 +48,7 @@ function Cabinet() {
       <div className="max-w-md p-6 border rounded shadow-lg bg-gray-800">
         <BurgerMenu />
         <h2 className="text-2xl mb-4">Личный кабинет</h2>
+        {/* <Header user={user} handleSignOut={handleSignOut} /> */}
         {user ? (
           <>
             <p>Привет, {displayName || "Гость"}!</p>
@@ -63,7 +65,7 @@ function Cabinet() {
                 Выйти из аккаунта
               </button>
             </Link>
-            {/* Добавьте остальное содержимое вашего кабинета */}
+            {/* Add the rest of your cabinet content here */}
           </>
         ) : (
           <p>Пожалуйста, войдите в систему.</p>

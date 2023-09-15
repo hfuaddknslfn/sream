@@ -2,9 +2,17 @@ import React, { useState, useEffect } from "react";
 import style from "../shop/Store.module.scss";
 import Header from "../../Header/Header";
 import { useLocation, useParams } from "react-router-dom";
-import Todo from "../../components/Todo";
-import { db, deleteDoc, updateDoc, doc } from "../../firebase"; // Импортируйте необходимые функции из вашего файла firebase
-import queryString from "query-string";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  addDoc,
+  deleteDoc,
+} from "firebase/firestore";
+import { db } from "../../firebase"; // Импортируйте настройки Firebase из вашего файла
+import { auth } from "../../firebase"; // Импортируйте вашу библиотеку аутентификации
+import { Link } from "react-router-dom";
 
 const Store = () => {
   const [isModalVisible, setModalVisible] = useState(false);
@@ -14,6 +22,12 @@ const Store = () => {
   const [editedTaskId, setEditedTaskId] = useState(null);
   const [isModalVisible2, setModalVisible2] = useState(false);
   const [isModalVisible3, setModalVisible3] = useState(false);
+  const [cards, setCards] = useState([]); // Стейт для хранения данных карточек
+  const [isLoading, setIsLoading] = useState(true);
+  const [tasks, setTasks] = useState([]);
+  const [isNotRegisteredModalVisible, setNotRegisteredModalVisible] =
+    useState(false); // Стейт для отображения модального окна незарегистрированным пользователям
+  const [favoriteTasks, setFavoriteTasks] = useState([]);
 
   const handleMouseEnter = () => {
     setModalVisible(true);
@@ -40,47 +54,89 @@ const Store = () => {
   };
 
   const location = useLocation();
-  const searchParams = queryString.parse(location.search);
-  const taskId = searchParams.taskId;
-  const taskName = searchParams.taskName;
-  const taskText = searchParams.taskText;
-  const imageUrl = searchParams.imageUrl;
+  const searchParams = new URLSearchParams(location.search);
+
+  const taskName = searchParams.get("taskName");
+  const taskText = searchParams.get("taskText");
+  const imageUrl = searchParams.get("imageUrl");
+  const { taskId } = useParams();
 
   useEffect(() => {
-    // Устанавливаем значение editedTaskId при изменении taskId
-    setEditedTaskId(taskId);
+    // Теперь taskId доступен для использования
+    console.log(taskId);
   }, [taskId]);
 
-  console.log(editedTaskId);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "tasks"));
+        const tasksData = [];
+        querySnapshot.forEach((doc) => {
+          tasksData.push({ ...doc.data(), id: doc.id }); // Добавляем id к задачам
+        });
+        setTasks(tasksData);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Ошибка при запросе данных:", error);
+        setIsLoading(false);
+      }
+    };
 
-  const handleDeleteTodo = async (taskIdToDelete) => {
-    if (taskIdToDelete === null) {
-      console.error("Недопустимый todoId: null");
+    fetchData();
+  }, []);
+
+  // Store.jsx
+  const addToFavorites = async (taskId) => {
+    try {
+      const task = tasks.find((task) => task.id === taskId);
+      if (!task) {
+        console.error("Задача с указанным ID не найдена.");
+        return;
+      }
+
+      // Проверяем, есть ли у задачи необходимые поля
+      if (!task.title || !task.imageUrl || !task.text) {
+        console.error("Недостаточно данных для добавления в избранное.");
+        return;
+      }
+
+      await addDoc(collection(db, "favorites"), {
+        taskName: task.title,
+        imageUrl: task.imageUrl,
+        taskText: task.text,
+      });
+
+      console.log("Задача добавлена в избранное");
+    } catch (error) {
+      console.error("Ошибка при добавлении задачи в избранное:", error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    // Проверяем, авторизован ли пользователь
+    const user = auth.currentUser;
+
+    if (!user) {
+      // Если пользователь не авторизован, отображаем модальное окно
+      setNotRegisteredModalVisible(true);
+      return;
+    }
+
+    if (!taskId) {
+      console.error("Недопустимый taskId: null");
       return;
     }
 
     try {
-      await deleteDoc(doc(db, "todos", taskIdToDelete));
+      // Удаление задачи с указанным ID
+      await deleteDoc(doc(db, "tasks", taskId));
       console.log("Задача удалена успешно.");
+      // После удаления задачи, обновите список задач или выполните другие действия
     } catch (error) {
       console.error("Ошибка при удалении задачи:", error);
     }
   };
 
-  const handleEditTodo = async () => {
-    if (!editedTaskName || !editedTaskText || !editedTaskId) return;
-    const updatedData = {
-      title: editedTaskName,
-      text: editedTaskText,
-    };
-
-    try {
-      await updateDoc(doc(db, "todos", editedTaskId), updatedData);
-      setEditModalVisible(false);
-    } catch (error) {
-      console.error("Ошибка при обновлении задачи:", error);
-    }
-  };
   return (
     <div className="h-[1200px]">
       <Header />
@@ -381,63 +437,56 @@ const Store = () => {
           </div>
         </div>
       </div>
-      <div className="h-[1200px]">
-        {/* ... */}
-        <div className="bg-gray-900 text-white p-4 flex flex-col justify-center m-auto w-[500px] h-[300px] rounded-[18px] py-12">
-          <h1 className="text-3xl font-semibold">Store Page</h1>
-          {taskName && <p className="text-xl">Task Name: {taskName}</p>}
-          {taskText && <p className="text-xl">Task Text: {taskText}</p>}
-          {imageUrl && <img src={imageUrl} alt="Task Image" className="mt-4" />}
-          {taskName && (
-            <div>
-              <button
-                className="mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                onClick={() => handleDeleteTodo(editedTaskId)}
-              >
-                Удалить задачу
-              </button>
-              // Для редактирования задачи
-              <button
-                className="mt-4 ml-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => setEditModalVisible(true)}
-              >
-                Редактировать задачу
-              </button>
-            </div>
-          )}
-          {/* Остальное содержимое страницы Store */}
+      <div className="h-[800px] bg-gray-900">
+        <div className="flex flex-col justify-center m-auto">
+          {/* Task List */}
+          <div className="col-span-3 md:col-span-2 flex flex-col justify-center m-auto">
+            <h2 className="text-2xl font-semibold mb-4">Список задач:</h2>
+            {isLoading ? (
+              <p>Загрузка данных...</p>
+            ) : (
+              <ul className="grid grid-cols-4 gap-[50px] grid-rows-4">
+                {tasks.map((task, index) => (
+                  <li
+                    key={index}
+                    className="bg-gray-800 rounded-md p-4 shadow-md"
+                  >
+                    <strong className="text-lg font-semibold">
+                      {task.taskName}
+                    </strong>
+                    <p className="text-gray-600">{task.taskText}</p>
+                    <Link to={"/Page1"}>
+                      <img
+                        src={task.imageUrl}
+                        alt={task.taskName}
+                        className="w-full mt-2"
+                      />
+                    </Link>
+                    <button onClick={() => addToFavorites(task.id)}>
+                      Добавить в избранное
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTask(task.id)}
+                      className="bg-red-500 text-white px-4 py-2 mt-2 hover:bg-red-600"
+                    >
+                      Удалить
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
-        {isEditModalVisible && (
-          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-4 rounded-lg">
-              <h2 className="text-2xl font-semibold mb-2">
-                Редактировать задачу
-              </h2>
-              <input
-                type="text"
-                placeholder="Название задачи"
-                value={editedTaskName}
-                onChange={(e) => setEditedTaskName(e.target.value)}
-                className="mb-2 p-2 border border-gray-300 rounded w-full"
-              />
-              <textarea
-                placeholder="Описание задачи"
-                value={editedTaskText}
-                onChange={(e) => setEditedTaskText(e.target.value)}
-                className="mb-2 p-2 border border-gray-300 rounded w-full"
-              />
+        {isNotRegisteredModalVisible && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-4 shadow-md">
+              <p>Вы должны быть зарегистрированы, чтобы удалить задачу.</p>
               <button
-                onClick={handleEditTodo}
-                className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                onClick={() => setNotRegisteredModalVisible(false)}
+                className="bg-blue-500 text-white px-4 py-2 mt-4 hover:bg-blue-600"
               >
-                Сохранить изменения
-              </button>
-              <button
-                onClick={() => setEditModalVisible(false)}
-                className="bg-red-500 text-white p-2 rounded ml-2 hover:bg-red-600"
-              >
-                Отмена
+                Закрыть
               </button>
             </div>
           </div>

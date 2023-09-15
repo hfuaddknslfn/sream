@@ -115,6 +115,7 @@ const HomePage = ({ onGameClick }) => {
     },
     // Добавьте остальные игры здесь
   ];
+
   const [selectedGame, setSelectedGame] = useState(null);
 
   const handleGameClick = (game) => {

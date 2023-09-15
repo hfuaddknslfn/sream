@@ -3,7 +3,7 @@ import GameCard from "./Gamecard";
 
 const GamePageDetail = ({ game, onBackClick }) => {
   return (
-    <div className="text-white mt-8 mx-auto flex flex-col text-center bg-[#211834] w-[500px] h-[600px] px-[30px] py-[100px] rounded-[50px]">
+    <div className="text-white mt-8 mx-auto flex flex-col text-center bg-[#211834] w-[500px] h-[700px] px-[30px] py-[100px] rounded-[50px]">
       <GameCard game={game} />
       <h2 className="text-2xl font-bold">{game.name}</h2>
       <p className="text-gray-300">{game.description}</p>
@@ -20,5 +20,4 @@ const GamePageDetail = ({ game, onBackClick }) => {
     </div>
   );
 };
-
 export default GamePageDetail;
